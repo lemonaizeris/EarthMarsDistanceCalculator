@@ -27,6 +27,17 @@ def main():
     solar_system_ephemeris.set("jpl")
 
     positions_earth, lightTimes_earth = spiceypy.spkezr('Earth', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
+    positions_mars, lightTimes_mars = spiceypy.spkezr('Mars', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
+
+    per_earth = np.array(positions_earth)[:, :3] * u.km
+    x_earth = per_earth[:, 0].to(u.au)
+    y_earth = per_earth[:, 1].to(u.au)
+    z_earth = per_earth[:, 2].to(u.au)
+
+    per_mars = np.array(positions_mars)[:, :3] * u.km
+    x_mars = per_mars[:, 0].to(u.au)
+    y_mars = per_mars[:, 1].to(u.au)
+    z_mars = per_mars[:, 2].to(u.au)
 
 
 if __name__ == '__main__':
