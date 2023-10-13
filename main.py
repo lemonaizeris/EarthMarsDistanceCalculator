@@ -4,6 +4,7 @@ import spiceypy
 from sunpy.time import TimeRange
 from astropy import time, units as u
 from astropy.coordinates import solar_system_ephemeris
+import matplotlib.pyplot as plt
 
 
 def main():
@@ -38,6 +39,27 @@ def main():
     x_mars = per_mars[:, 0].to(u.au)
     y_mars = per_mars[:, 1].to(u.au)
     z_mars = per_mars[:, 2].to(u.au)
+
+    fig, ax = plt.subplots(1, 3, sharex=True, sharey=True, figsize=(15, 5))
+    ax[0].plot(x_earth, z_earth)
+    ax[0].set_xlabel('x (AU)')
+    ax[0].set_ylabel('z (AU)')
+
+    ax[1].plot(x_earth, y_earth)
+    ax[1].set_xlabel('x (AU)')
+    ax[1].set_ylabel('y (AU)')
+
+    ax[2].plot(y_earth, z_earth)
+    ax[2].set_xlabel('y (AU)')
+    ax[2].set_ylabel('z (AU)')
+
+    for a in ax:
+        a.grid()
+        a.set_ylim(-1, 1)
+        a.set_xlim(-1, 1)
+
+    plt.tight_layout()
+
 
 
 if __name__ == '__main__':
