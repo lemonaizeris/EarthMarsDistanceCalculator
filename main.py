@@ -40,7 +40,7 @@ def main():
     y_mars = per_mars[:, 1].to(u.au)
     z_mars = per_mars[:, 2].to(u.au)
 
-    fig, ax = plt.subplots(1, 3, sharex=True, sharey=True, figsize=(15, 5))
+    fig, ax = plt.subplots(2, 3, sharex=True, sharey=True, figsize=(15, 5))
     ax[0].plot(x_earth, z_earth)
     ax[0].set_xlabel('x (AU)')
     ax[0].set_ylabel('z (AU)')
@@ -52,6 +52,18 @@ def main():
     ax[2].plot(y_earth, z_earth)
     ax[2].set_xlabel('y (AU)')
     ax[2].set_ylabel('z (AU)')
+
+    ax[3].plot(x_mars, z_mars)
+    ax[3].set_xlabel('x (AU)')
+    ax[3].set_ylabel('z (AU)')
+
+    ax[4].plot(x_mars, y_mars)
+    ax[4].set_xlabel('x (AU)')
+    ax[4].set_ylabel('y (AU)')
+
+    ax[5].plot(y_mars, z_mars)
+    ax[5].set_xlabel('y (AU)')
+    ax[5].set_ylabel('z (AU)')
 
     for a in ax:
         a.grid()
