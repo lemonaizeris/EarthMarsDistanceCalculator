@@ -6,14 +6,15 @@ from astropy import time, units as u
 from astropy.coordinates import solar_system_ephemeris
 import matplotlib.pyplot as plt
 
+from pathlib import Path
+
 
 def main():
     print("Running solar system model")
 
-    spice_files = ['/Users/lahayes/spiceypy_test/kernels/lsk/naif0012.tls',
-                   '/Users/lahayes/spiceypy_test/kernels/spk/de421.bsp',
-                   '/Users/lahayes/spiceypy_test/kernels/pck/pck00010.tpc',
-                   '/Users/lahayes/spiceypy_test/kernels/spk/solo_ANC_soc-orbit_20200207-20300902_V01.bsp']
+    spice_files = [Path('/SPICE/kernels/lsk/naif0012.tls'),
+                   Path('/SPICE/kernels/spk/de421.bsp'),
+                   Path('/SPICE/kernels/pck/pck00011.tpc')]
     spiceypy.furnsh(spice_files)
 
     timerange = TimeRange('2020-02-10', 8 * u.year)
