@@ -12,9 +12,9 @@ from pathlib import Path
 def main():
     print("Running solar system model")
 
-    spice_files = [Path('/SPICE/kernels/lsk/naif0012.tls'),
-                   Path('/SPICE/kernels/spk/de421.bsp'),
-                   Path('/SPICE/kernels/pck/pck00011.tpc')]
+    spice_files = ['\SPICE\kernels\lsk\\naif0012.tls',
+                   '\SPICE\kernels\spk\de421.bsp',
+                   '\SPICE\kernels\pck\pck00011.tpc']
     spiceypy.furnsh(spice_files)
 
     timerange = TimeRange('2020-02-10', 8 * u.year)
