@@ -37,6 +37,10 @@ def main():
     y_earth = per_earth[:, 1].to(u.au)
     z_earth = per_earth[:, 2].to(u.au)
 
+    print(x_earth)
+    print(y_earth)
+    print(z_earth)
+
     per_mars = np.array(positions_mars)[:, :3] * u.km
     x_mars = per_mars[:, 0].to(u.au)
     y_mars = per_mars[:, 1].to(u.au)
@@ -74,6 +78,7 @@ def main():
         a.set_xlim(-1, 1)
 
     plt.tight_layout()
+    plt.show()
 
 
 
