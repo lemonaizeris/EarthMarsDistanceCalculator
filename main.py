@@ -5,6 +5,7 @@ from sunpy.time import TimeRange
 from astropy import time, units as u
 from astropy.coordinates import solar_system_ephemeris
 import matplotlib.pyplot as plt
+import jplephem
 
 from pathlib import Path
 
@@ -12,12 +13,12 @@ from pathlib import Path
 def main():
     print("Running solar system model")
 
-    spice_files = ['\SPICE\kernels\lsk\\naif0012.tls',
-                   '\SPICE\kernels\spk\de421.bsp',
-                   '\SPICE\kernels\pck\pck00011.tpc']
+    spice_files = ['naif0012.tls',
+                   'de430.bsp',
+                   'pck00011.tpc']
     spiceypy.furnsh(spice_files)
 
-    timerange = TimeRange('2020-02-10', 8 * u.year)
+    timerange = TimeRange('2020-02-10', 10 * u.year)
     times = [timerange.start.datetime]
     t = times[0]
     while t < timerange.end:
@@ -41,7 +42,7 @@ def main():
     y_mars = per_mars[:, 1].to(u.au)
     z_mars = per_mars[:, 2].to(u.au)
 
-    fig, ax = plt.subplots(2, 3, sharex=True, sharey=True, figsize=(15, 5))
+    fig, ax = plt.subplots(1, 3, sharex=True, sharey=True, figsize=(15, 5))
     ax[0].plot(x_earth, z_earth)
     ax[0].set_xlabel('x (AU)')
     ax[0].set_ylabel('z (AU)')
@@ -65,6 +66,7 @@ def main():
     ax[5].plot(y_mars, z_mars)
     ax[5].set_xlabel('y (AU)')
     ax[5].set_ylabel('z (AU)')
+
 
     for a in ax:
         a.grid()
