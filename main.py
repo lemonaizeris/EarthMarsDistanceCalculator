@@ -31,6 +31,7 @@ def main():
 
     positions_earth, lightTimes_earth = spiceypy.spkezr('Earth', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
     positions_mars, lightTimes_mars = spiceypy.spkezr('Mars Barycenter', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
+    positions_sun, lightTimes_earth = spiceypy.spkezr('Sun', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
 
     per_earth = np.array(positions_earth)[:, :3] * u.km
     x_earth = per_earth[:, 0].to(u.au)
@@ -41,6 +42,11 @@ def main():
     x_mars = per_mars[:, 0].to(u.au)
     y_mars = per_mars[:, 1].to(u.au)
     z_mars = per_mars[:, 2].to(u.au)
+
+    per_sun = np.array(positions_sun)[:, :3] * u.km
+    x_sun = per_sun[:, 0].to(u.au)
+    y_sun = per_sun[:, 1].to(u.au)
+    z_sun = per_sun[:, 2].to(u.au)
 
     print(x_mars)
     print(y_mars)
@@ -79,6 +85,17 @@ def main():
             a.set_xlim(-2, 2)
 
     plt.tight_layout()
+    plt.show()
+
+    fig = plt.figure(figsize=(8, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(x_earth.to_value(), y_earth.to_value(), z_earth.to_value(), cmap='Blues', c=time_spice)
+    ax.scatter(x_mars.to_value(), y_mars.to_value(), z_mars.to_value(), cmap='Reds', c=time_spice)
+    ax.scatter(x_sun.to_value(), y_sun.to_value(), z_sun.to_value(), color='orange')
+    ax.set_xlabel('AU')
+    ax.set_ylabel('AU')
+    ax.set_zlabel('AU')
+
     plt.show()
 
 
