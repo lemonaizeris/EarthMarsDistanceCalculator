@@ -15,10 +15,11 @@ def main():
 
     spice_files = ['naif0012.tls',
                    'de430.bsp',
+                   'mars_iau2000_v1.tpc',
                    'pck00011.tpc']
     spiceypy.furnsh(spice_files)
 
-    timerange = TimeRange('2020-02-10', 10 * u.year)
+    timerange = TimeRange('2020-01-01', 1 * u.year)
     times = [timerange.start.datetime]
     t = times[0]
     while t < timerange.end:
@@ -47,10 +48,6 @@ def main():
     x_sun = per_sun[:, 0].to(u.au)
     y_sun = per_sun[:, 1].to(u.au)
     z_sun = per_sun[:, 2].to(u.au)
-
-    print(x_mars)
-    print(y_mars)
-    print(z_mars)
 
     fig, ax = plt.subplots(2, 3, sharex=True, sharey=True, figsize=(15, 10))
     ax[0,0].plot(x_earth, z_earth)
@@ -95,6 +92,8 @@ def main():
     ax.set_xlabel('AU')
     ax.set_ylabel('AU')
     ax.set_zlabel('AU')
+
+    ax.view_init(azim=-60, elev=10)
 
     plt.show()
 
