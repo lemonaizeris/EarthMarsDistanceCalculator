@@ -97,6 +97,163 @@ def main():
 
     plt.show()
 
+    plot_full(101, save_plot=True, save_dir='plots\\')
+
+
+def plot_full(i, save_plot=False, save_dir='solo_plots'):
+    """
+    Function to make a plot that contains several subplots including
+    a 3D plot of the orbit of Solar Orbiter, Earth, Venus, and a plot
+    of the orbits in x-y and x-z plane, and also include the speed and
+    elevation of Solar Orbiter as a function of time.
+
+    Parameters
+    ----------
+    i : `int`
+        index of the time_spice to plot, i.e. it will plot
+        positions at time step time_spice[i]
+
+    save_plot : `Boolean`, optional
+        if set True, then will save the plot to the `save_dir` directory
+
+    save_dir : `str`, optional
+        path to save the plot if save_plot==True.
+        Defaults to creating a solo_plots directory in the
+        current working directory
+
+    """
+    # setting up some style parameters that look good for this plot
+    sns.set_context('paper', font_scale=0.8, rc={'axes.linewidth': 0.5})
+
+    # define colors and colormaps for Solar Orbiter, Earth and Venus
+    solo_col = 'r'
+    cmap_solo = 'Reds'
+
+    earth_col = '#377eb8'
+    cmap_earth = sns.light_palette(earth_col, as_cmap=True)
+
+    venus_col = 'k'
+    cmap_venus = 'Greys'
+
+    # i is for each timestep - but we also want to plot the
+    # previous 20 timesteps, j, to illustrate the trajectory path
+    if i < 20:
+        j = 0
+    else:
+        j = i - 20
+
+    # set up plotting informatio in each dictionary
+    kwargs_solo = {'s': 10, 'c': time_spice[j:i], 'cmap': cmap_solo}
+    kwargs_Earth = {'s': 10, 'c': time_spice[j:i], 'cmap': cmap_earth}
+    kwargs_Venus = {'s': 5, 'c': time_spice[j:i], 'cmap': cmap_venus}
+
+    # get box sizes for plotting positions on figure
+    xx = 10
+    yy = 5
+    box = 0.18
+
+    fig = plt.figure(figsize=(xx, yy))
+
+    # 3D plot of trajectories
+    ax = pylab.axes([0.0, 0.02, 0.6, 0.90], projection='3d')
+    ax.scatter(x_solo.to_value()[j:i], y_solo.to_value()[j:i], z_solo.to_value()[j:i], **kwargs_solo)
+    ax.scatter(x_earth.to_value()[j:i], y_earth.to_value()[j:i], z_earth.to_value()[j:i], **kwargs_Earth)
+    ax.scatter(x_venus.to_value()[j:i], y_venus.to_value()[j:i], z_venus.to_value()[j:i], **kwargs_Venus)
+    ax.scatter(x_sun.to_value()[i], y_sun.to_value()[i], z_sun.to_value()[i], color='y', s=30)
+
+    ax.scatter(x_solo.to_value()[i], y_solo.to_value()[i], z_solo.to_value()[i], color=solo_col,
+               label='Solar Orbiter', s=10)
+    ax.scatter(x_earth.to_value()[i], y_earth.to_value()[i], z_earth.to_value()[i], color=earth_col, label='Earth',
+               s=10)
+    ax.scatter(x_venus.to_value()[i], y_venus.to_value()[i], z_venus.to_value()[i], color=venus_col, label='Venus',
+               s=5)
+
+    ax.plot(x_solo.to_value()[0:i], y_solo.to_value()[0:i], z_solo.to_value()[0:i], color=solo_col, lw=0.2)
+    ax.plot(x_earth.to_value()[0:i], y_earth.to_value()[0:i], z_earth.to_value()[0:i], color=earth_col, lw=0.2)
+    ax.plot(x_venus.to_value()[0:i], y_venus.to_value()[0:i], z_venus.to_value()[0:i], color=venus_col, lw=0.1)
+
+    ax.view_init(azim=-60, elev=20)
+
+    ax.set_xlim(-1, 1)
+    ax.set_ylim(-1, 1)
+    ax.set_zlim(-0.5, 0.5)
+    ax.set_title('Solar Orbiter Trajectory {:s}'.format(times[i].strftime('%Y-%m-%d %H:%M')), y=1.05, fontsize=12)
+    ax.set_xlabel('x (AU)')
+    ax.set_ylabel('y (AU)')
+    ax.set_zlabel('z (AU)')
+    leg = ax.legend(loc='upper right', bbox_to_anchor=(0.53, 0.85),
+                    bbox_transform=plt.gcf().transFigure, fontsize=8)
+    for handle, text in zip(leg.legendHandles, leg.get_texts()):
+        text.set_color(handle.get_facecolor()[0])
+
+    # x-y plane projection plot
+    bx = pylab.axes([0.61, 0.08, box, box * (xx / yy)])
+    bx.scatter(x_solo.to_value()[j:i], y_solo.to_value()[j:i], **kwargs_solo)
+    bx.scatter(x_sun.to_value()[i], y_sun.to_value()[i], color='y', s=30)
+    bx.scatter(x_earth.to_value()[j:i], y_earth.to_value()[j:i], **kwargs_Earth)
+    bx.scatter(x_venus.to_value()[j:i], y_venus.to_value()[j:i], **kwargs_Venus)
+    bx.tick_params(direction='in', labelleft=False, left=False, bottom=False, labelbottom=False, width=0.5,
+                   length=3)
+
+    bx.plot(x_solo.to_value()[0:i], y_solo.to_value()[0:i], color=solo_col, lw=0.2)
+    bx.plot(x_earth.to_value()[0:i], y_earth.to_value()[0:i], color=earth_col, lw=0.2)
+    bx.plot(x_venus.to_value()[0:i], y_venus.to_value()[0:i], color=venus_col, lw=0.1)
+    bx.set_xlabel('x-y plane (AU)')
+
+    bx.set_xlim(-1.05, 1.05)
+    bx.set_ylim(-1.05, 1.05)
+    bx.set_xticks([-1, -0.5, 0, 0.5, 1])
+    bx.set_yticks([-1, -0.5, 0, 0.5, 1])
+
+    # x-z plane projection plot
+    cx = pylab.axes([0.61 + box + 0.01, 0.08, box, box * (xx / yy)])
+    cx.scatter(x_solo.to_value()[j:i], z_solo.to_value()[j:i], **kwargs_solo)
+    cx.scatter(x_sun.to_value()[i], z_sun.to_value()[i], color='y', s=30)
+    cx.scatter(x_earth.to_value()[j:i], z_earth.to_value()[j:i], **kwargs_Earth)
+    cx.scatter(x_venus.to_value()[j:i], z_venus.to_value()[j:i], **kwargs_Venus)
+    cx.plot(x_solo.to_value()[0:i], z_solo.to_value()[0:i], color=solo_col, lw=0.2)
+    cx.plot(x_earth.to_value()[0:i], z_earth.to_value()[0:i], color=earth_col, lw=0.2)
+    cx.plot(x_venus.to_value()[0:i], z_venus.to_value()[0:i], color=venus_col, lw=0.1)
+    cx.tick_params(labelleft=False, labelbottom=False, left=False, right=False, bottom=False, labelright=False,
+                   direction='in', width=0.5, length=3)
+    cx.set_xlabel('x-z plane (AU)')
+
+    cx.set_xlim(-1.05, 1.05)
+    cx.set_ylim(-0.14, 0.25)
+    cx.set_xticks([-1, -0.5, 0, 0.5, 1])
+    cx.set_yticks([-0.1, 0, 0.1, 0.2])
+
+    # plot of speed of Solar Orbiter as function of time
+    dx = pylab.axes([0.67, 0.75, 0.3, 0.2])
+    dx.plot(times, speed, color=solo_col, lw=0.5)
+    dx.scatter(times[j:i], speed[j:i], **kwargs_solo)
+    dx.set_xlim(times[0], times[-1])
+    dx.axvline(times[i], color='k', lw=0.5)
+    dx.tick_params(labelbottom=False, direction='in', width=0.5, length=3)
+    dx.set_ylabel('Speed (km/s)')
+
+    # plot of the elevation of Solar Orbiter as function of time
+    ex = pylab.axes([0.67, 0.54, 0.3, 0.2], sharex=dx)
+    ex.plot(times, elevation, color=solo_col, lw=0.5)
+    ex.scatter(times[j:i], elevation[j:i], **kwargs_solo)
+    ex.set_xlim(times[0], times[-1])
+    ex.axvline(times[i], color='k', lw=0.5)
+    ex.tick_params(direction='in', width=0.5, length=3)
+    ex.set_xlabel('Time (UT)')
+    ex.set_ylabel('Inclination (deg)')
+
+    # save each timestep plot
+    if save_plot:
+        # if save_dir is not provided then create a solo_plots path
+        if save_dir == 'solo_plots':
+            save_dir = os.path.join(os.getcwd(), save_dir)
+        if not os.path.exists(save_dir):
+            os.mkdir(save_dir)
+
+        # this will save the files is ~/solo_plots/all_plots_0001.png for i = 1
+        plt.savefig(os.path.join(save_dir, 'all_plots_{:04d}.png'.format(i)), dpi=250)
+        plt.close()
+
 
 
 if __name__ == '__main__':
