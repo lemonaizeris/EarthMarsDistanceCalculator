@@ -51,6 +51,13 @@ def main():
     y_mars = per_mars[:, 1].to(u.au)
     z_mars = per_mars[:, 2].to(u.au)
 
+    global dist_mars_earth
+    dist_mars_earth = np.array(np.linalg.norm(np.array(positions_mars)[:, :3] - np.array(positions_earth)[:, :3], axis=1)) * u.au
+    #dist_mars_earth = np.array([np.sqrt(np.sum(point_earth-per_mars[index])**2, axis=0) for point_earth, index in per_earth])
+    #dist_mars_earth = np.sqrt(np.sum((per_earth[:]-per_mars)**2, axis=0)).to(u.au)
+    print(dist_mars_earth)
+    # something is wrong here. Way too massive result
+
     per_sun = np.array(positions_sun)[:, :3] * u.km
     global x_sun, y_sun, z_sun
     x_sun = per_sun[:, 0].to(u.au)
@@ -147,7 +154,7 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     else:
         j = i - 20
 
-    # set up plotting informatio in each dictionary
+    # set up plotting information in each dictionary
     kwargs_Earth = {'s': 10, 'c': time_spice[j:i], 'cmap': cmap_earth}
     kwargs_Mars = {'s': 5, 'c': time_spice[j:i], 'cmap': cmap_mars}
 
@@ -171,6 +178,11 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
 
     ax.plot(x_earth.to_value()[0:i], y_earth.to_value()[0:i], z_earth.to_value()[0:i], color=earth_col, lw=0.2)
     ax.plot(x_mars.to_value()[0:i], y_mars.to_value()[0:i], z_mars.to_value()[0:i], color=mars_col, lw=0.1)
+
+    print("CALCULATED: ")
+    print(np.sqrt((x_earth.to_value()[0:i] - x_mars.to_value()[0:i])**2 + (y_earth.to_value()[0:i] - y_mars.to_value()[0:i])**2 + (z_earth.to_value()[0:i] - z_mars.to_value()[0:i])**2))
+    print("dist_mars_earth: ")
+    print(dist_mars_earth[i])
 
     ax.view_init(azim=-60, elev=20)
 
@@ -214,10 +226,19 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
                    direction='in', width=0.5, length=3)
     cx.set_xlabel('x-z plane (AU)')
 
-    cx.set_xlim(-1.05, 1.05)
+    cx.set_xlim(-1.5, 1.5)
     cx.set_ylim(-0.14, 0.25)
     cx.set_xticks([-1, -0.5, 0, 0.5, 1])
     cx.set_yticks([-0.1, 0, 0.1, 0.2])
+
+    ex = plt.axes([0.67, 0.54, 0.3, 0.2])
+    ex.plot(times, dist_mars_earth, color=mars_col, lw=0.5)
+    ex.scatter(times[j:i], dist_mars_earth[j:i], **kwargs_Mars)
+    ex.set_xlim(times[0], times[-1])
+    ex.axvline(times[i], color='k', lw=0.5)
+    ex.tick_params(direction='in', width=0.5, length=3)
+    ex.set_xlabel('Time (UT)')
+    ex.set_ylabel('Distance between Earth and Mars (AU)')
 
     plt.show()
     # save each timestep plot
