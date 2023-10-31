@@ -52,11 +52,28 @@ def main():
     z_mars = per_mars[:, 2].to(u.au)
 
     global dist_mars_earth
-    dist_mars_earth = np.array(np.linalg.norm(np.array(positions_mars)[:, :3] - np.array(positions_earth)[:, :3], axis=1)) * u.au
+    #dist_mars_earth = np.array(np.linalg.norm(np.array(positions_mars)[:, :3] - np.array(positions_earth)[:, :3], axis=1)) * u.au
     #dist_mars_earth = np.array([np.sqrt(np.sum(point_earth-per_mars[index])**2, axis=0) for point_earth, index in per_earth])
     #dist_mars_earth = np.sqrt(np.sum((per_earth[:]-per_mars)**2, axis=0)).to(u.au)
+    dist_mars_earth = np.array([])
+    pos_index = 0
+    while pos_index < len(times):
+        dist = np.sqrt((x_earth.to_value()[pos_index] - x_mars.to_value()[pos_index])**2 +
+                       + (y_earth.to_value()[pos_index] - y_mars.to_value()[pos_index])**2 +
+                       + (z_earth.to_value()[pos_index] - z_mars.to_value()[pos_index])**2)
+
+
+        dist_mars_earth = np.append(dist_mars_earth, dist)
+        print('A post_index ' + str(pos_index) + 'has elements: ' + str(len(dist_mars_earth)))
+        pos_index = pos_index + 1
+
+
+    print('AFTER WHILE LOOP:')
     print(dist_mars_earth)
-    # something is wrong here. Way too massive result
+    print(len(dist_mars_earth))
+    print(len(times))
+    # While loop is probably not so efficient. Maybe change to some other distance calculation method.
+    # Commented code currently doesn't work
 
     per_sun = np.array(positions_sun)[:, :3] * u.km
     global x_sun, y_sun, z_sun
