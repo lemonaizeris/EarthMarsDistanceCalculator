@@ -2,7 +2,7 @@ import datetime
 import numpy as np
 import spiceypy
 from sunpy.time import TimeRange
-from astropy import time, units as u
+from astropy import units as u
 from astropy.coordinates import solar_system_ephemeris
 import matplotlib.pyplot as plt
 import jplephem
@@ -10,11 +10,11 @@ import jplephem
 import seaborn as sns
 
 import os
-from pathlib import Path
+import subprocess
 
 
 def main():
-    print("Running solar system model")
+    print("Running solar system model...")
 
     spice_files = ['naif0012.tls',
                    'de430.bsp',
@@ -64,14 +64,14 @@ def main():
 
 
         dist_mars_earth = np.append(dist_mars_earth, dist)
-        print('A post_index ' + str(pos_index) + 'has elements: ' + str(len(dist_mars_earth)))
+        # print('A post_index ' + str(pos_index) + 'has elements: ' + str(len(dist_mars_earth)))
         pos_index = pos_index + 1
 
 
-    print('AFTER WHILE LOOP:')
-    print(dist_mars_earth)
-    print(len(dist_mars_earth))
-    print(len(times))
+    # print('AFTER WHILE LOOP:')
+    # print(dist_mars_earth)
+    # print(len(dist_mars_earth))
+    # print(len(times))
     # While loop is probably not so efficient. Maybe change to some other distance calculation method.
     # Commented code currently doesn't work
 
@@ -114,7 +114,7 @@ def main():
             a.set_xlim(-2, 2)
 
     plt.tight_layout()
-    plt.show()
+    #plt.show()
 
     fig = plt.figure(figsize=(8, 8))
     ax = fig.add_subplot(111, projection='3d')
@@ -127,10 +127,34 @@ def main():
 
     ax.view_init(azim=-60, elev=10)
 
-    plt.show()
+    #plt.show()
 
-    plot_full(101, save_plot=False, save_dir='plots\\')
+    # plot_full(101, save_plot=True, save_dir='plots\\')
+    make_movie(0, len(x_earth)-1, save_dir='plots\\')
 
+
+def make_movie(start, end, save_dir, save_file='save_movie_mars_earth_orbits.mp4'):
+    """
+    Function to call `plot_full` iteratively over each time step of time_spice.
+    Once these are all saved, then subprocess is used to call ffmpeg for stitch together
+    the pngs in save_dir to an mp4.
+
+    Parameters
+    ----------
+    save_dir : `str`
+        directory to where the plots are saved from plot_full() function
+    save_file : `str`, optional
+        name of mp4 to be saved
+
+    """
+    for i in range(start, end):
+        print(i, 'out of ', len(x_earth))
+        plot_full(i, save_plot=True, save_dir=save_dir)
+
+    # subprocess is used here to call bash
+    subprocess.call(['ffmpeg', '-r', '30', '-f', 'image2', '-s', '1920x1080', '-i',
+                     save_dir + '/all_plots_%04d.png', '-vcodec',
+                     'libx264', '-crf', '25', '-pix_fmt', 'yuv420p', save_file])
 
 def plot_full(i, save_plot=False, save_dir='solo_plots'):
     """
@@ -161,8 +185,8 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     earth_col = '#377eb8'
     cmap_earth = sns.light_palette(earth_col, as_cmap=True)
 
-    mars_col = 'k'
-    cmap_mars = 'Greys'
+    mars_col = 'red'
+    cmap_mars = sns.light_palette(mars_col, as_cmap=True)
 
     # i is for each timestep - but we also want to plot the
     # previous 20 timesteps, j, to illustrate the trajectory path
@@ -196,10 +220,10 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     ax.plot(x_earth.to_value()[0:i], y_earth.to_value()[0:i], z_earth.to_value()[0:i], color=earth_col, lw=0.2)
     ax.plot(x_mars.to_value()[0:i], y_mars.to_value()[0:i], z_mars.to_value()[0:i], color=mars_col, lw=0.1)
 
-    print("CALCULATED: ")
-    print(np.sqrt((x_earth.to_value()[0:i] - x_mars.to_value()[0:i])**2 + (y_earth.to_value()[0:i] - y_mars.to_value()[0:i])**2 + (z_earth.to_value()[0:i] - z_mars.to_value()[0:i])**2))
-    print("dist_mars_earth: ")
-    print(dist_mars_earth[i])
+    # print("CALCULATED: ")
+    # print(np.sqrt((x_earth.to_value()[0:i] - x_mars.to_value()[0:i])**2 + (y_earth.to_value()[0:i] - y_mars.to_value()[0:i])**2 + (z_earth.to_value()[0:i] - z_mars.to_value()[0:i])**2))
+    # print("dist_mars_earth: ")
+    # print(dist_mars_earth[i])
 
     ax.view_init(azim=-60, elev=20)
 
@@ -257,7 +281,6 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     ex.set_xlabel('Time (UT)')
     ex.set_ylabel('Distance between Earth and Mars (AU)')
 
-    plt.show()
     # save each timestep plot
     if save_plot:
         # if save_dir is not provided then create a solo_plots path
@@ -269,6 +292,8 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
         # this will save the files is ~/solo_plots/all_plots_0001.png for i = 1
         plt.savefig(os.path.join(save_dir, 'all_plots_{:04d}.png'.format(i)), dpi=250)
         plt.close()
+    else:
+        plt.show()
 
 
 
