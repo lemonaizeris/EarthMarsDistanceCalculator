@@ -37,6 +37,7 @@ def main():
 
     positions_earth, lightTimes_earth = spiceypy.spkezr('Earth', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
     positions_mars, lightTimes_mars = spiceypy.spkezr('Mars Barycenter', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
+    positions_phobos, lightTimes_phobos = spiceypy.spkezr('Phobos', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
     positions_sun, lightTimes_earth = spiceypy.spkezr('Sun', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
 
     per_earth = np.array(positions_earth)[:, :3] * u.km
@@ -50,6 +51,12 @@ def main():
     x_mars = per_mars[:, 0].to(u.au)
     y_mars = per_mars[:, 1].to(u.au)
     z_mars = per_mars[:, 2].to(u.au)
+
+    per_phobos = np.array(positions_phobos)[:, :3] * u.km
+    global x_phobos, y_phobos, z_phobos
+    x_phobos = per_phobos[:, 0].to(u.au)
+    y_phobos = per_phobos[:, 1].to(u.au)
+    z_phobos = per_phobos[:, 2].to(u.au)
 
     global dist_mars_earth
     #dist_mars_earth = np.array(np.linalg.norm(np.array(positions_mars)[:, :3] - np.array(positions_earth)[:, :3], axis=1)) * u.au
@@ -188,6 +195,9 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     mars_col = 'red'
     cmap_mars = sns.light_palette(mars_col, as_cmap=True)
 
+    phobos_col = 'grey'
+    cmap_phobos = sns.light_palette(phobos_col, as_cmap=True)
+
     # i is for each timestep - but we also want to plot the
     # previous 20 timesteps, j, to illustrate the trajectory path
     if i < 20:
@@ -198,6 +208,7 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     # set up plotting information in each dictionary
     kwargs_Earth = {'s': 10, 'c': time_spice[j:i], 'cmap': cmap_earth}
     kwargs_Mars = {'s': 5, 'c': time_spice[j:i], 'cmap': cmap_mars}
+    kwargs_Phobos = {'s': 3, 'c': time_spice[j:i], 'cmap': cmap_phobos}
 
     # get box sizes for plotting positions on figure
     xx = 10
@@ -210,15 +221,19 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     ax = plt.axes([0.0, 0.02, 0.6, 0.90], projection='3d')
     ax.scatter(x_earth.to_value()[j:i], y_earth.to_value()[j:i], z_earth.to_value()[j:i], **kwargs_Earth)
     ax.scatter(x_mars.to_value()[j:i], y_mars.to_value()[j:i], z_mars.to_value()[j:i], **kwargs_Mars)
+    ax.scatter(x_phobos.to_value()[j:i], y_phobos.to_value()[j:i], z_phobos.to_value()[j:i], **kwargs_Phobos)
     ax.scatter(x_sun.to_value()[i], y_sun.to_value()[i], z_sun.to_value()[i], color='y', s=30)
 
     ax.scatter(x_earth.to_value()[i], y_earth.to_value()[i], z_earth.to_value()[i], color=earth_col, label='Earth',
                s=10)
     ax.scatter(x_mars.to_value()[i], y_mars.to_value()[i], z_mars.to_value()[i], color=mars_col, label='Mars',
                s=5)
+    ax.scatter(x_phobos.to_value()[i], y_phobos.to_value()[i], z_phobos.to_value()[i], color=phobos_col, label='Phobos',
+               s=5)
 
     ax.plot(x_earth.to_value()[0:i], y_earth.to_value()[0:i], z_earth.to_value()[0:i], color=earth_col, lw=0.2)
     ax.plot(x_mars.to_value()[0:i], y_mars.to_value()[0:i], z_mars.to_value()[0:i], color=mars_col, lw=0.1)
+    ax.plot(x_phobos.to_value()[0:i], y_phobos.to_value()[0:i], z_phobos.to_value()[0:i], color=phobos_col, lw=0.1)
 
     # print("CALCULATED: ")
     # print(np.sqrt((x_earth.to_value()[0:i] - x_mars.to_value()[0:i])**2 + (y_earth.to_value()[0:i] - y_mars.to_value()[0:i])**2 + (z_earth.to_value()[0:i] - z_mars.to_value()[0:i])**2))
@@ -244,11 +259,13 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     bx.scatter(x_sun.to_value()[i], y_sun.to_value()[i], color='y', s=30)
     bx.scatter(x_earth.to_value()[j:i], y_earth.to_value()[j:i], **kwargs_Earth)
     bx.scatter(x_mars.to_value()[j:i], y_mars.to_value()[j:i], **kwargs_Mars)
+    bx.scatter(x_phobos.to_value()[j:i], y_phobos.to_value()[j:i], **kwargs_Phobos)
     bx.tick_params(direction='in', labelleft=False, left=False, bottom=False, labelbottom=False, width=0.5,
                    length=3)
 
     bx.plot(x_earth.to_value()[0:i], y_earth.to_value()[0:i], color=earth_col, lw=0.2)
     bx.plot(x_mars.to_value()[0:i], y_mars.to_value()[0:i], color=mars_col, lw=0.1)
+    bx.plot(x_phobos.to_value()[0:i], y_phobos.to_value()[0:i], color=phobos_col, lw=0.1)
     bx.set_xlabel('x-y plane (AU)')
 
     bx.set_xlim(-1.5, 1.5)
@@ -261,8 +278,10 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     cx.scatter(x_sun.to_value()[i], z_sun.to_value()[i], color='y', s=30)
     cx.scatter(x_earth.to_value()[j:i], z_earth.to_value()[j:i], **kwargs_Earth)
     cx.scatter(x_mars.to_value()[j:i], z_mars.to_value()[j:i], **kwargs_Mars)
+    cx.scatter(x_phobos.to_value()[j:i], z_phobos.to_value()[j:i], **kwargs_Phobos)
     cx.plot(x_earth.to_value()[0:i], z_earth.to_value()[0:i], color=earth_col, lw=0.2)
     cx.plot(x_mars.to_value()[0:i], z_mars.to_value()[0:i], color=mars_col, lw=0.1)
+    cx.plot(x_phobos.to_value()[0:i], z_phobos.to_value()[0:i], color=phobos_col, lw=0.1)
     cx.tick_params(labelleft=False, labelbottom=False, left=False, right=False, bottom=False, labelright=False,
                    direction='in', width=0.5, length=3)
     cx.set_xlabel('x-z plane (AU)')
