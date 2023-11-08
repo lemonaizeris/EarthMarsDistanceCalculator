@@ -17,12 +17,14 @@ def main():
     print("Running solar system model...")
 
     spice_files = ['naif0012.tls',
-                   'de430.bsp',
+                   'de441_part-1.bsp',
+                   'de441_part-2.bsp',
+                   'mar097s.bsp',
                    'mars_iau2000_v1.tpc',
                    'pck00011.tpc']
     spiceypy.furnsh(spice_files)
 
-    timerange = TimeRange('2020-01-01', 10 * u.year)
+    timerange = TimeRange('2024-01-01', 10 * u.year)
     global times
     times = [timerange.start.datetime]
     t = times[0]
@@ -36,7 +38,7 @@ def main():
     solar_system_ephemeris.set("jpl")
 
     positions_earth, lightTimes_earth = spiceypy.spkezr('Earth', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
-    positions_mars, lightTimes_mars = spiceypy.spkezr('Mars Barycenter', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
+    positions_mars, lightTimes_mars = spiceypy.spkezr('Mars', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
     positions_phobos, lightTimes_phobos = spiceypy.spkezr('Phobos', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
     positions_sun, lightTimes_earth = spiceypy.spkezr('Sun', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
 
