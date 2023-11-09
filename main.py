@@ -5,7 +5,7 @@ from sunpy.time import TimeRange
 from astropy import units as u
 from astropy.coordinates import solar_system_ephemeris
 import matplotlib.pyplot as plt
-import jplephem
+from sklearn.preprocessing import normalize
 
 import seaborn as sns
 
@@ -24,7 +24,7 @@ def main():
                    'pck00011.tpc']
     spiceypy.furnsh(spice_files)
 
-    timerange = TimeRange('2024-01-01', 10 * u.year)
+    timerange = TimeRange('2024-01-01', 5 * u.year)
     global times
     times = [timerange.start.datetime]
     t = times[0]
@@ -43,7 +43,7 @@ def main():
     positions_sun, lightTimes_earth = spiceypy.spkezr('Sun', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
 
     per_earth = np.array(positions_earth)[:, :3] * u.km
-    global  x_earth, y_earth, z_earth
+    global x_earth, y_earth, z_earth
     x_earth = per_earth[:, 0].to(u.au)
     y_earth = per_earth[:, 1].to(u.au)
     z_earth = per_earth[:, 2].to(u.au)
@@ -60,22 +60,39 @@ def main():
     y_phobos = per_phobos[:, 1].to(u.au)
     z_phobos = per_phobos[:, 2].to(u.au)
 
-    global dist_mars_earth
-    #dist_mars_earth = np.array(np.linalg.norm(np.array(positions_mars)[:, :3] - np.array(positions_earth)[:, :3], axis=1)) * u.au
-    #dist_mars_earth = np.array([np.sqrt(np.sum(point_earth-per_mars[index])**2, axis=0) for point_earth, index in per_earth])
-    #dist_mars_earth = np.sqrt(np.sum((per_earth[:]-per_mars)**2, axis=0)).to(u.au)
+    per_sun = np.array(positions_sun)[:, :3] * u.km
+    global x_sun, y_sun, z_sun
+    x_sun = per_sun[:, 0].to(u.au)
+    y_sun = per_sun[:, 1].to(u.au)
+    z_sun = per_sun[:, 2].to(u.au)
+
+    global dist_mars_earth, angle_mars_earth
+    # dist_mars_earth = np.array(np.linalg.norm(np.array(positions_mars)[:, :3] - np.array(positions_earth)[:, :3], axis=1)) * u.au
+    # dist_mars_earth = np.array([np.sqrt(np.sum(point_earth-per_mars[index])**2, axis=0) for point_earth, index in per_earth])
+    # dist_mars_earth = np.sqrt(np.sum((per_earth[:]-per_mars)**2, axis=0)).to(u.au)
     dist_mars_earth = np.array([])
     pos_index = 0
     while pos_index < len(times):
-        dist = np.sqrt((x_earth.to_value()[pos_index] - x_mars.to_value()[pos_index])**2 +
-                       + (y_earth.to_value()[pos_index] - y_mars.to_value()[pos_index])**2 +
-                       + (z_earth.to_value()[pos_index] - z_mars.to_value()[pos_index])**2)
-
+        dist = np.sqrt((x_earth.to_value()[pos_index] - x_mars.to_value()[pos_index]) ** 2 +
+                       + (y_earth.to_value()[pos_index] - y_mars.to_value()[pos_index]) ** 2 +
+                       + (z_earth.to_value()[pos_index] - z_mars.to_value()[pos_index]) ** 2)
 
         dist_mars_earth = np.append(dist_mars_earth, dist)
         # print('A post_index ' + str(pos_index) + 'has elements: ' + str(len(dist_mars_earth)))
         pos_index = pos_index + 1
 
+    earth_mars_vector = np.array([x_mars - x_earth, y_mars - y_earth, z_mars - z_earth])
+    earth_sun_vector = np.array([x_sun - x_earth, y_sun - y_earth, z_sun - z_earth])
+    print('NOT normalized:')
+    print(earth_mars_vector)
+    print(earth_sun_vector)
+    earth_mars_vector_norm = normalize(earth_mars_vector)
+    earth_sun_vector_norm = normalize(earth_sun_vector)
+    print('Normalized:')
+    print(earth_mars_vector_norm)
+    print(earth_sun_vector_norm)
+
+    angle_mars_earth = np.arccos(np.clip(np.dot(np.squeeze(earth_mars_vector_norm), np.squeeze(earth_sun_vector_norm)), -1.0, 1.0))
 
     # print('AFTER WHILE LOOP:')
     # print(dist_mars_earth)
@@ -84,37 +101,30 @@ def main():
     # While loop is probably not so efficient. Maybe change to some other distance calculation method.
     # Commented code currently doesn't work
 
-    per_sun = np.array(positions_sun)[:, :3] * u.km
-    global x_sun, y_sun, z_sun
-    x_sun = per_sun[:, 0].to(u.au)
-    y_sun = per_sun[:, 1].to(u.au)
-    z_sun = per_sun[:, 2].to(u.au)
-
     fig, ax = plt.subplots(2, 3, sharex=True, sharey=True, figsize=(15, 10))
-    ax[0,0].plot(x_earth, z_earth)
-    ax[0,0].set_xlabel('x (AU)')
-    ax[0,0].set_ylabel('z (AU)')
+    ax[0, 0].plot(x_earth, z_earth)
+    ax[0, 0].set_xlabel('x (AU)')
+    ax[0, 0].set_ylabel('z (AU)')
 
-    ax[0,1].plot(x_earth, y_earth)
-    ax[0,1].set_xlabel('x (AU)')
-    ax[0,1].set_ylabel('y (AU)')
+    ax[0, 1].plot(x_earth, y_earth)
+    ax[0, 1].set_xlabel('x (AU)')
+    ax[0, 1].set_ylabel('y (AU)')
 
-    ax[0,2].plot(y_earth, z_earth)
-    ax[0,2].set_xlabel('y (AU)')
-    ax[0,2].set_ylabel('z (AU)')
+    ax[0, 2].plot(y_earth, z_earth)
+    ax[0, 2].set_xlabel('y (AU)')
+    ax[0, 2].set_ylabel('z (AU)')
 
-    ax[1,0].plot(x_mars, z_mars)
-    ax[1,0].set_xlabel('x (AU)')
-    ax[1,0].set_ylabel('z (AU)')
+    ax[1, 0].plot(x_mars, z_mars)
+    ax[1, 0].set_xlabel('x (AU)')
+    ax[1, 0].set_ylabel('z (AU)')
 
-    ax[1,1].plot(x_mars, y_mars)
-    ax[1,1].set_xlabel('x (AU)')
-    ax[1,1].set_ylabel('y (AU)')
+    ax[1, 1].plot(x_mars, y_mars)
+    ax[1, 1].set_xlabel('x (AU)')
+    ax[1, 1].set_ylabel('y (AU)')
 
-    ax[1,2].plot(y_mars, z_mars)
-    ax[1,2].set_xlabel('y (AU)')
-    ax[1,2].set_ylabel('z (AU)')
-
+    ax[1, 2].plot(y_mars, z_mars)
+    ax[1, 2].set_xlabel('y (AU)')
+    ax[1, 2].set_ylabel('z (AU)')
 
     for b in ax:
         for a in b:
@@ -123,7 +133,7 @@ def main():
             a.set_xlim(-2, 2)
 
     plt.tight_layout()
-    #plt.show()
+    # plt.show()
 
     fig = plt.figure(figsize=(8, 8))
     ax = fig.add_subplot(111, projection='3d')
@@ -136,10 +146,10 @@ def main():
 
     ax.view_init(azim=-60, elev=10)
 
-    #plt.show()
+    # plt.show()
 
-    # plot_full(101, save_plot=True, save_dir='plots\\')
-    make_movie(0, len(x_earth)-1, save_dir='plots\\')
+    plot_full(101, save_plot=False, save_dir='plots\\')
+    # make_movie(0, len(x_earth)-1, save_dir='plots\\')
 
 
 def make_movie(start, end, save_dir, save_file='save_movie_mars_earth_orbits.mp4'):
@@ -165,6 +175,7 @@ def make_movie(start, end, save_dir, save_file='save_movie_mars_earth_orbits.mp4
                      save_dir + '/all_plots_%04d.png', '-vcodec',
                      'libx264', '-crf', '25', '-pix_fmt', 'yuv420p', save_file])
 
+
 def plot_full(i, save_plot=False, save_dir='solo_plots'):
     """
     Function to make a plot that contains several subplots including
@@ -189,7 +200,6 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     """
     # setting up some style parameters that look good for this plot
     sns.set_context('paper', font_scale=0.8, rc={'axes.linewidth': 0.5})
-
 
     earth_col = '#377eb8'
     cmap_earth = sns.light_palette(earth_col, as_cmap=True)
@@ -253,7 +263,7 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     ax.set_zlabel('z (AU)')
     leg = ax.legend(loc='upper right', bbox_to_anchor=(0.53, 0.85),
                     bbox_transform=plt.gcf().transFigure, fontsize=8)
-    #for handle, text in zip(leg.legendHandles, leg.get_texts()):
+    # for handle, text in zip(leg.legendHandles, leg.get_texts()):
     #    text.set_color(handle.get_facecolor()[0])
 
     # x-y plane projection plot
@@ -302,10 +312,19 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     ex.set_xlabel('Time (UT)')
     ex.set_ylabel('Distance between Earth and Mars (AU)')
 
+    ex = plt.axes([0.67, 0.54, 0.3, 0.2])
+    ex.plot(times, angle_mars_earth, color=mars_col, lw=0.5)
+    ex.scatter(times[j:i], angle_mars_earth[j:i], **kwargs_Mars)
+    ex.set_xlim(times[0], times[-1])
+    ex.axvline(times[i], color='k', lw=0.5)
+    ex.tick_params(direction='in', width=0.5, length=3)
+    ex.set_xlabel('Time (UT)')
+    ex.set_ylabel('Angle between Earth/Mars and Earth/Sun (rad)')
+
     # save each timestep plot
     if save_plot:
         # if save_dir is not provided then create a solo_plots path
-        if save_dir == 'solo_plots':
+        if save_dir == 'plots':
             save_dir = os.path.join(os.getcwd(), save_dir)
         if not os.path.exists(save_dir):
             os.mkdir(save_dir)
@@ -315,7 +334,6 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
         plt.close()
     else:
         plt.show()
-
 
 
 if __name__ == '__main__':
