@@ -24,7 +24,7 @@ def main():
                    'pck00011.tpc']
     spiceypy.furnsh(spice_files)
 
-    timerange = TimeRange('2024-01-01', 5 * u.year)
+    timerange = TimeRange('2024-01-01', 10 * u.year)
     global times
     times = [timerange.start.datetime]
     t = times[0]
@@ -71,28 +71,36 @@ def main():
     # dist_mars_earth = np.array([np.sqrt(np.sum(point_earth-per_mars[index])**2, axis=0) for point_earth, index in per_earth])
     # dist_mars_earth = np.sqrt(np.sum((per_earth[:]-per_mars)**2, axis=0)).to(u.au)
     dist_mars_earth = np.array([])
+    angle_mars_earth = np.array([])
     pos_index = 0
     while pos_index < len(times):
         dist = np.sqrt((x_earth.to_value()[pos_index] - x_mars.to_value()[pos_index]) ** 2 +
                        + (y_earth.to_value()[pos_index] - y_mars.to_value()[pos_index]) ** 2 +
                        + (z_earth.to_value()[pos_index] - z_mars.to_value()[pos_index]) ** 2)
 
+        earth_mars_vector = np.array([[x_mars.to_value()[pos_index] - x_earth.to_value()[pos_index]],
+                                      [y_mars.to_value()[pos_index] - y_earth.to_value()[pos_index]],
+                                      [z_mars.to_value()[pos_index] - z_earth.to_value()[pos_index]]])
+        earth_sun_vector = np.array([[x_sun.to_value()[pos_index] - x_earth.to_value()[pos_index]],
+                                     [y_sun.to_value()[pos_index] - y_earth.to_value()[pos_index]],
+                                     [z_sun.to_value()[pos_index] - z_earth.to_value()[pos_index]]])
+        #print('NOT normalized:')
+        #print(earth_mars_vector)
+        #print(earth_sun_vector)
+        earth_mars_vector_norm = earth_mars_vector / np.linalg.norm(earth_mars_vector)
+        earth_sun_vector_norm = earth_sun_vector / np.linalg.norm(earth_sun_vector)
+        #print('Normalized:')
+        #print(earth_mars_vector_norm)
+        #print(earth_sun_vector_norm)
+
+        angle = np.arccos(np.dot(np.squeeze(earth_mars_vector_norm), np.squeeze(earth_sun_vector_norm)))
+
         dist_mars_earth = np.append(dist_mars_earth, dist)
+        angle_mars_earth = np.append(angle_mars_earth, angle)
         # print('A post_index ' + str(pos_index) + 'has elements: ' + str(len(dist_mars_earth)))
         pos_index = pos_index + 1
 
-    earth_mars_vector = np.array([x_mars - x_earth, y_mars - y_earth, z_mars - z_earth])
-    earth_sun_vector = np.array([x_sun - x_earth, y_sun - y_earth, z_sun - z_earth])
-    print('NOT normalized:')
-    print(earth_mars_vector)
-    print(earth_sun_vector)
-    earth_mars_vector_norm = normalize(earth_mars_vector)
-    earth_sun_vector_norm = normalize(earth_sun_vector)
-    print('Normalized:')
-    print(earth_mars_vector_norm)
-    print(earth_sun_vector_norm)
-
-    angle_mars_earth = np.arccos(np.clip(np.dot(np.squeeze(earth_mars_vector_norm), np.squeeze(earth_sun_vector_norm)), -1.0, 1.0))
+    angle_mars_earth = np.rad2deg(angle_mars_earth) % 360
 
     # print('AFTER WHILE LOOP:')
     # print(dist_mars_earth)
@@ -148,8 +156,8 @@ def main():
 
     # plt.show()
 
-    plot_full(101, save_plot=False, save_dir='plots\\')
-    # make_movie(0, len(x_earth)-1, save_dir='plots\\')
+    #plot_full(101, save_plot=False, save_dir='current_plots\\')
+    make_movie(0, len(x_earth)-1, save_dir='current_plots\\')
 
 
 def make_movie(start, end, save_dir, save_file='save_movie_mars_earth_orbits.mp4'):
@@ -176,7 +184,7 @@ def make_movie(start, end, save_dir, save_file='save_movie_mars_earth_orbits.mp4
                      'libx264', '-crf', '25', '-pix_fmt', 'yuv420p', save_file])
 
 
-def plot_full(i, save_plot=False, save_dir='solo_plots'):
+def plot_full(i, save_plot=False, save_dir='current_plots'):
     """
     Function to make a plot that contains several subplots including
     a 3D plot of the orbit of Solar Orbiter, Earth, Venus, and a plot
@@ -303,7 +311,7 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     cx.set_xticks([-1, -0.5, 0, 0.5, 1])
     cx.set_yticks([-0.1, 0, 0.1, 0.2])
 
-    ex = plt.axes([0.67, 0.54, 0.3, 0.2])
+    ex = plt.axes([0.67, 0.50, 0.3, 0.2])
     ex.plot(times, dist_mars_earth, color=mars_col, lw=0.5)
     ex.scatter(times[j:i], dist_mars_earth[j:i], **kwargs_Mars)
     ex.set_xlim(times[0], times[-1])
@@ -312,19 +320,19 @@ def plot_full(i, save_plot=False, save_dir='solo_plots'):
     ex.set_xlabel('Time (UT)')
     ex.set_ylabel('Distance between Earth and Mars (AU)')
 
-    ex = plt.axes([0.67, 0.54, 0.3, 0.2])
-    ex.plot(times, angle_mars_earth, color=mars_col, lw=0.5)
-    ex.scatter(times[j:i], angle_mars_earth[j:i], **kwargs_Mars)
-    ex.set_xlim(times[0], times[-1])
-    ex.axvline(times[i], color='k', lw=0.5)
-    ex.tick_params(direction='in', width=0.5, length=3)
-    ex.set_xlabel('Time (UT)')
-    ex.set_ylabel('Angle between Earth/Mars and Earth/Sun (rad)')
+    fx = plt.axes([0.67, 0.78, 0.3, 0.2])
+    fx.plot(times, angle_mars_earth, color=mars_col, lw=0.5)
+    fx.scatter(times[j:i], angle_mars_earth[j:i], **kwargs_Mars)
+    fx.set_xlim(times[0], times[-1])
+    fx.axvline(times[i], color='k', lw=0.5)
+    fx.tick_params(direction='in', width=0.5, length=3)
+    fx.set_xlabel('Time (UT)')
+    fx.set_ylabel('Angle between Earth/Mars and Earth/Sun (deg)')
 
     # save each timestep plot
     if save_plot:
         # if save_dir is not provided then create a solo_plots path
-        if save_dir == 'plots':
+        if save_dir == 'current_plots':
             save_dir = os.path.join(os.getcwd(), save_dir)
         if not os.path.exists(save_dir):
             os.mkdir(save_dir)
