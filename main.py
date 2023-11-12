@@ -66,6 +66,20 @@ def main():
     y_sun = per_sun[:, 1].to(u.au)
     z_sun = per_sun[:, 2].to(u.au)
 
+    do_calculations()
+
+    # print('AFTER WHILE LOOP:')
+    # print(dist_mars_earth)
+    # print(len(dist_mars_earth))
+    # print(len(times))
+    # While loop is probably not so efficient. Maybe change to some other distance calculation method.
+    # Commented code currently doesn't work
+
+    #plot_full(101, save_plot=False, save_dir='current_plots\\')
+    make_movie(0, len(x_earth)-1, save_dir='current_plots\\')
+
+
+def do_calculations():
     global dist_mars_earth, angle_mars_earth
     # dist_mars_earth = np.array(np.linalg.norm(np.array(positions_mars)[:, :3] - np.array(positions_earth)[:, :3], axis=1)) * u.au
     # dist_mars_earth = np.array([np.sqrt(np.sum(point_earth-per_mars[index])**2, axis=0) for point_earth, index in per_earth])
@@ -84,14 +98,14 @@ def main():
         earth_sun_vector = np.array([[x_sun.to_value()[pos_index] - x_earth.to_value()[pos_index]],
                                      [y_sun.to_value()[pos_index] - y_earth.to_value()[pos_index]],
                                      [z_sun.to_value()[pos_index] - z_earth.to_value()[pos_index]]])
-        #print('NOT normalized:')
-        #print(earth_mars_vector)
-        #print(earth_sun_vector)
+        # print('NOT normalized:')
+        # print(earth_mars_vector)
+        # print(earth_sun_vector)
         earth_mars_vector_norm = earth_mars_vector / np.linalg.norm(earth_mars_vector)
         earth_sun_vector_norm = earth_sun_vector / np.linalg.norm(earth_sun_vector)
-        #print('Normalized:')
-        #print(earth_mars_vector_norm)
-        #print(earth_sun_vector_norm)
+        # print('Normalized:')
+        # print(earth_mars_vector_norm)
+        # print(earth_sun_vector_norm)
 
         angle = np.arccos(np.dot(np.squeeze(earth_mars_vector_norm), np.squeeze(earth_sun_vector_norm)))
 
@@ -102,78 +116,7 @@ def main():
 
     angle_mars_earth = np.rad2deg(angle_mars_earth) % 360
 
-    # print('AFTER WHILE LOOP:')
-    # print(dist_mars_earth)
-    # print(len(dist_mars_earth))
-    # print(len(times))
-    # While loop is probably not so efficient. Maybe change to some other distance calculation method.
-    # Commented code currently doesn't work
-
-    fig, ax = plt.subplots(2, 3, sharex=True, sharey=True, figsize=(15, 10))
-    ax[0, 0].plot(x_earth, z_earth)
-    ax[0, 0].set_xlabel('x (AU)')
-    ax[0, 0].set_ylabel('z (AU)')
-
-    ax[0, 1].plot(x_earth, y_earth)
-    ax[0, 1].set_xlabel('x (AU)')
-    ax[0, 1].set_ylabel('y (AU)')
-
-    ax[0, 2].plot(y_earth, z_earth)
-    ax[0, 2].set_xlabel('y (AU)')
-    ax[0, 2].set_ylabel('z (AU)')
-
-    ax[1, 0].plot(x_mars, z_mars)
-    ax[1, 0].set_xlabel('x (AU)')
-    ax[1, 0].set_ylabel('z (AU)')
-
-    ax[1, 1].plot(x_mars, y_mars)
-    ax[1, 1].set_xlabel('x (AU)')
-    ax[1, 1].set_ylabel('y (AU)')
-
-    ax[1, 2].plot(y_mars, z_mars)
-    ax[1, 2].set_xlabel('y (AU)')
-    ax[1, 2].set_ylabel('z (AU)')
-
-    for b in ax:
-        for a in b:
-            a.grid()
-            a.set_ylim(-2, 2)
-            a.set_xlim(-2, 2)
-
-    plt.tight_layout()
-    # plt.show()
-
-    fig = plt.figure(figsize=(8, 8))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(x_earth.to_value(), y_earth.to_value(), z_earth.to_value(), cmap='Blues', c=time_spice)
-    ax.scatter(x_mars.to_value(), y_mars.to_value(), z_mars.to_value(), cmap='Reds', c=time_spice)
-    ax.scatter(x_sun.to_value(), y_sun.to_value(), z_sun.to_value(), color='orange')
-    ax.set_xlabel('AU')
-    ax.set_ylabel('AU')
-    ax.set_zlabel('AU')
-
-    ax.view_init(azim=-60, elev=10)
-
-    # plt.show()
-
-    #plot_full(101, save_plot=False, save_dir='current_plots\\')
-    make_movie(0, len(x_earth)-1, save_dir='current_plots\\')
-
-
 def make_movie(start, end, save_dir, save_file='save_movie_mars_earth_orbits.mp4'):
-    """
-    Function to call `plot_full` iteratively over each time step of time_spice.
-    Once these are all saved, then subprocess is used to call ffmpeg for stitch together
-    the pngs in save_dir to an mp4.
-
-    Parameters
-    ----------
-    save_dir : `str`
-        directory to where the plots are saved from plot_full() function
-    save_file : `str`, optional
-        name of mp4 to be saved
-
-    """
     for i in range(start, end):
         print(i, 'out of ', len(x_earth))
         plot_full(i, save_plot=True, save_dir=save_dir)
@@ -185,27 +128,6 @@ def make_movie(start, end, save_dir, save_file='save_movie_mars_earth_orbits.mp4
 
 
 def plot_full(i, save_plot=False, save_dir='current_plots'):
-    """
-    Function to make a plot that contains several subplots including
-    a 3D plot of the orbit of Solar Orbiter, Earth, Venus, and a plot
-    of the orbits in x-y and x-z plane, and also include the speed and
-    elevation of Solar Orbiter as a function of time.
-
-    Parameters
-    ----------
-    i : `int`
-        index of the time_spice to plot, i.e. it will plot
-        positions at time step time_spice[i]
-
-    save_plot : `Boolean`, optional
-        if set True, then will save the plot to the `save_dir` directory
-
-    save_dir : `str`, optional
-        path to save the plot if save_plot==True.
-        Defaults to creating a solo_plots directory in the
-        current working directory
-
-    """
     # setting up some style parameters that look good for this plot
     sns.set_context('paper', font_scale=0.8, rc={'axes.linewidth': 0.5})
 
