@@ -40,25 +40,17 @@ def main():
     positions_earth, lightTimes_earth = spiceypy.spkezr('Earth', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
     positions_mars, lightTimes_mars = spiceypy.spkezr('Mars', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
     positions_phobos, lightTimes_phobos = spiceypy.spkezr('Phobos', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
-    positions_sun, lightTimes_earth = spiceypy.spkezr('Sun', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
+    positions_sun, lightTimes_sun = spiceypy.spkezr('Sun', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
 
-    per_earth = np.array(positions_earth)[:, :3] * u.km
-    global x_earth, y_earth, z_earth
-    x_earth = per_earth[:, 0].to(u.au)
-    y_earth = per_earth[:, 1].to(u.au)
-    z_earth = per_earth[:, 2].to(u.au)
+    global per_object, x_object, y_object, z_object
+    per_object = {}
+    x_object = {}
+    y_object = {}
+    z_object = {}
 
-    per_mars = np.array(positions_mars)[:, :3] * u.km
-    global x_mars, y_mars, z_mars
-    x_mars = per_mars[:, 0].to(u.au)
-    y_mars = per_mars[:, 1].to(u.au)
-    z_mars = per_mars[:, 2].to(u.au)
-
-    per_phobos = np.array(positions_phobos)[:, :3] * u.km
-    global x_phobos, y_phobos, z_phobos
-    x_phobos = per_phobos[:, 0].to(u.au)
-    y_phobos = per_phobos[:, 1].to(u.au)
-    z_phobos = per_phobos[:, 2].to(u.au)
+    extract_object(positions_earth, 'earth')
+    extract_object(positions_sun, 'sun')
+    extract_object(positions_mars, 'mars')
 
     per_sun = np.array(positions_sun)[:, :3] * u.km
     global x_sun, y_sun, z_sun
@@ -75,9 +67,16 @@ def main():
     # While loop is probably not so efficient. Maybe change to some other distance calculation method.
     # Commented code currently doesn't work
 
-    #plot_full(101, save_plot=False, save_dir='current_plots\\')
-    make_movie(0, len(x_earth)-1, save_dir='current_plots\\')
+    plot_full(101, save_plot=False, save_dir='current_plots\\')
+    #make_movie(0, len(x_object['earth'])-1, save_dir='current_plots\\')
 
+
+def extract_object(object_position, object_name):
+    per_object[object_name] = np.array(object_position)[:, :3] * u.km
+
+    x_object[object_name] = per_object[object_name][:, 0].to(u.au)
+    y_object[object_name] = per_object[object_name][:, 1].to(u.au)
+    z_object[object_name] = per_object[object_name][:, 2].to(u.au)
 
 def do_calculations():
     global dist_mars_earth, angle_mars_earth
@@ -88,16 +87,16 @@ def do_calculations():
     angle_mars_earth = np.array([])
     pos_index = 0
     while pos_index < len(times):
-        dist = np.sqrt((x_earth.to_value()[pos_index] - x_mars.to_value()[pos_index]) ** 2 +
-                       + (y_earth.to_value()[pos_index] - y_mars.to_value()[pos_index]) ** 2 +
-                       + (z_earth.to_value()[pos_index] - z_mars.to_value()[pos_index]) ** 2)
+        dist = np.sqrt((x_object['earth'].to_value()[pos_index] - x_object['mars'].to_value()[pos_index]) ** 2 +
+                       + (y_object['earth'].to_value()[pos_index] - y_object['mars'].to_value()[pos_index]) ** 2 +
+                       + (z_object['earth'].to_value()[pos_index] - z_object['mars'].to_value()[pos_index]) ** 2)
 
-        earth_mars_vector = np.array([[x_mars.to_value()[pos_index] - x_earth.to_value()[pos_index]],
-                                      [y_mars.to_value()[pos_index] - y_earth.to_value()[pos_index]],
-                                      [z_mars.to_value()[pos_index] - z_earth.to_value()[pos_index]]])
-        earth_sun_vector = np.array([[x_sun.to_value()[pos_index] - x_earth.to_value()[pos_index]],
-                                     [y_sun.to_value()[pos_index] - y_earth.to_value()[pos_index]],
-                                     [z_sun.to_value()[pos_index] - z_earth.to_value()[pos_index]]])
+        earth_mars_vector = np.array([[x_object['mars'].to_value()[pos_index] - x_object['earth'].to_value()[pos_index]],
+                                      [y_object['mars'].to_value()[pos_index] - y_object['earth'].to_value()[pos_index]],
+                                      [z_object['mars'].to_value()[pos_index] - z_object['earth'].to_value()[pos_index]]])
+        earth_sun_vector = np.array([[x_object['sun'].to_value()[pos_index] - x_object['earth'].to_value()[pos_index]],
+                                     [y_object['sun'].to_value()[pos_index] - y_object['earth'].to_value()[pos_index]],
+                                     [z_object['sun'].to_value()[pos_index] - z_object['earth'].to_value()[pos_index]]])
         # print('NOT normalized:')
         # print(earth_mars_vector)
         # print(earth_sun_vector)
@@ -118,7 +117,7 @@ def do_calculations():
 
 def make_movie(start, end, save_dir, save_file='save_movie_mars_earth_orbits.mp4'):
     for i in range(start, end):
-        print(i, 'out of ', len(x_earth))
+        print(i, 'out of ', len(x_object['earth']))
         plot_full(i, save_plot=True, save_dir=save_dir)
 
     # subprocess is used here to call bash
@@ -137,9 +136,6 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
     mars_col = 'red'
     cmap_mars = sns.light_palette(mars_col, as_cmap=True)
 
-    phobos_col = 'grey'
-    cmap_phobos = sns.light_palette(phobos_col, as_cmap=True)
-
     # i is for each timestep - but we also want to plot the
     # previous 20 timesteps, j, to illustrate the trajectory path
     if i < 20:
@@ -150,7 +146,6 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
     # set up plotting information in each dictionary
     kwargs_Earth = {'s': 10, 'c': time_spice[j:i], 'cmap': cmap_earth}
     kwargs_Mars = {'s': 5, 'c': time_spice[j:i], 'cmap': cmap_mars}
-    kwargs_Phobos = {'s': 3, 'c': time_spice[j:i], 'cmap': cmap_phobos}
 
     # get box sizes for plotting positions on figure
     xx = 10
@@ -161,21 +156,17 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
 
     # 3D plot of trajectories
     ax = plt.axes([0.0, 0.02, 0.6, 0.90], projection='3d')
-    ax.scatter(x_earth.to_value()[j:i], y_earth.to_value()[j:i], z_earth.to_value()[j:i], **kwargs_Earth)
-    ax.scatter(x_mars.to_value()[j:i], y_mars.to_value()[j:i], z_mars.to_value()[j:i], **kwargs_Mars)
-    ax.scatter(x_phobos.to_value()[j:i], y_phobos.to_value()[j:i], z_phobos.to_value()[j:i], **kwargs_Phobos)
-    ax.scatter(x_sun.to_value()[i], y_sun.to_value()[i], z_sun.to_value()[i], color='y', s=30)
+    ax.scatter(x_object['earth'].to_value()[j:i], y_object['earth'].to_value()[j:i], z_object['earth'].to_value()[j:i], **kwargs_Earth)
+    ax.scatter(x_object['mars'].to_value()[j:i], y_object['mars'].to_value()[j:i], z_object['mars'].to_value()[j:i], **kwargs_Mars)
+    ax.scatter(x_object['sun'].to_value()[i], y_object['sun'].to_value()[i], z_object['sun'].to_value()[i], color='y', s=30)
 
-    ax.scatter(x_earth.to_value()[i], y_earth.to_value()[i], z_earth.to_value()[i], color=earth_col, label='Earth',
+    ax.scatter(x_object['earth'].to_value()[i], y_object['earth'].to_value()[i], z_object['earth'].to_value()[i], color=earth_col, label='Earth',
                s=10)
-    ax.scatter(x_mars.to_value()[i], y_mars.to_value()[i], z_mars.to_value()[i], color=mars_col, label='Mars',
-               s=5)
-    ax.scatter(x_phobos.to_value()[i], y_phobos.to_value()[i], z_phobos.to_value()[i], color=phobos_col, label='Phobos',
+    ax.scatter(x_object['mars'].to_value()[i], y_object['mars'].to_value()[i], z_object['mars'].to_value()[i], color=mars_col, label='Mars',
                s=5)
 
-    ax.plot(x_earth.to_value()[0:i], y_earth.to_value()[0:i], z_earth.to_value()[0:i], color=earth_col, lw=0.2)
-    ax.plot(x_mars.to_value()[0:i], y_mars.to_value()[0:i], z_mars.to_value()[0:i], color=mars_col, lw=0.1)
-    ax.plot(x_phobos.to_value()[0:i], y_phobos.to_value()[0:i], z_phobos.to_value()[0:i], color=phobos_col, lw=0.1)
+    ax.plot(x_object['earth'].to_value()[0:i], y_object['earth'].to_value()[0:i], z_object['earth'].to_value()[0:i], color=earth_col, lw=0.2)
+    ax.plot(x_object['mars'].to_value()[0:i], y_object['mars'].to_value()[0:i], z_object['mars'].to_value()[0:i], color=mars_col, lw=0.1)
 
     # print("CALCULATED: ")
     # print(np.sqrt((x_earth.to_value()[0:i] - x_mars.to_value()[0:i])**2 + (y_earth.to_value()[0:i] - y_mars.to_value()[0:i])**2 + (z_earth.to_value()[0:i] - z_mars.to_value()[0:i])**2))
@@ -198,16 +189,14 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
 
     # x-y plane projection plot
     bx = plt.axes([0.61, 0.08, box, box * (xx / yy)])
-    bx.scatter(x_sun.to_value()[i], y_sun.to_value()[i], color='y', s=30)
-    bx.scatter(x_earth.to_value()[j:i], y_earth.to_value()[j:i], **kwargs_Earth)
-    bx.scatter(x_mars.to_value()[j:i], y_mars.to_value()[j:i], **kwargs_Mars)
-    bx.scatter(x_phobos.to_value()[j:i], y_phobos.to_value()[j:i], **kwargs_Phobos)
+    bx.scatter(x_object['sun'].to_value()[i], y_object['sun'].to_value()[i], color='y', s=30)
+    bx.scatter(x_object['earth'].to_value()[j:i], y_object['earth'].to_value()[j:i], **kwargs_Earth)
+    bx.scatter(x_object['mars'].to_value()[j:i], y_object['mars'].to_value()[j:i], **kwargs_Mars)
     bx.tick_params(direction='in', labelleft=False, left=False, bottom=False, labelbottom=False, width=0.5,
                    length=3)
 
-    bx.plot(x_earth.to_value()[0:i], y_earth.to_value()[0:i], color=earth_col, lw=0.2)
-    bx.plot(x_mars.to_value()[0:i], y_mars.to_value()[0:i], color=mars_col, lw=0.1)
-    bx.plot(x_phobos.to_value()[0:i], y_phobos.to_value()[0:i], color=phobos_col, lw=0.1)
+    bx.plot(x_object['earth'].to_value()[0:i], y_object['earth'].to_value()[0:i], color=earth_col, lw=0.2)
+    bx.plot(x_object['mars'].to_value()[0:i], y_object['mars'].to_value()[0:i], color=mars_col, lw=0.1)
     bx.set_xlabel('x-y plane (AU)')
 
     bx.set_xlim(-1.5, 1.5)
@@ -217,13 +206,11 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
 
     # x-z plane projection plot
     cx = plt.axes([0.61 + box + 0.01, 0.08, box, box * (xx / yy)])
-    cx.scatter(x_sun.to_value()[i], z_sun.to_value()[i], color='y', s=30)
-    cx.scatter(x_earth.to_value()[j:i], z_earth.to_value()[j:i], **kwargs_Earth)
-    cx.scatter(x_mars.to_value()[j:i], z_mars.to_value()[j:i], **kwargs_Mars)
-    cx.scatter(x_phobos.to_value()[j:i], z_phobos.to_value()[j:i], **kwargs_Phobos)
-    cx.plot(x_earth.to_value()[0:i], z_earth.to_value()[0:i], color=earth_col, lw=0.2)
-    cx.plot(x_mars.to_value()[0:i], z_mars.to_value()[0:i], color=mars_col, lw=0.1)
-    cx.plot(x_phobos.to_value()[0:i], z_phobos.to_value()[0:i], color=phobos_col, lw=0.1)
+    cx.scatter(x_object['sun'].to_value()[i], z_object['sun'].to_value()[i], color='y', s=30)
+    cx.scatter(x_object['earth'].to_value()[j:i], z_object['earth'].to_value()[j:i], **kwargs_Earth)
+    cx.scatter(x_object['mars'].to_value()[j:i], z_object['mars'].to_value()[j:i], **kwargs_Mars)
+    cx.plot(x_object['earth'].to_value()[0:i], z_object['earth'].to_value()[0:i], color=earth_col, lw=0.2)
+    cx.plot(x_object['mars'].to_value()[0:i], z_object['mars'].to_value()[0:i], color=mars_col, lw=0.1)
     cx.tick_params(labelleft=False, labelbottom=False, left=False, right=False, bottom=False, labelright=False,
                    direction='in', width=0.5, length=3)
     cx.set_xlabel('x-z plane (AU)')
