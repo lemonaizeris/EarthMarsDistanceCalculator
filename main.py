@@ -207,7 +207,7 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
     bx.scatter(x_object['mars'].to_value()[j:i], y_object['mars'].to_value()[j:i], **kwargs_Mars)
     bx.scatter(x_object['mercury'].to_value()[j:i], y_object['mercury'].to_value()[j:i], **kwargs_Mercury)
     bx.scatter(x_object['venus'].to_value()[j:i], y_object['venus'].to_value()[j:i], **kwargs_Venus)
-    bx.tick_params(direction='in', labelleft=False, left=False, bottom=False, labelbottom=False, width=0.5,
+    bx.tick_params(direction='in', labelleft=True, left=False, bottom=False, labelbottom=True, width=0.5,
                    length=3)
 
     bx.plot(x_object['earth'].to_value()[0:i], y_object['earth'].to_value()[0:i], color=earth_col, lw=0.2)
@@ -232,7 +232,7 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
     cx.plot(x_object['mars'].to_value()[0:i], z_object['mars'].to_value()[0:i], color=mars_col, lw=0.1)
     cx.plot(x_object['mercury'].to_value()[0:i], z_object['mercury'].to_value()[0:i], color=mercury_col, lw=0.1)
     cx.plot(x_object['venus'].to_value()[0:i], z_object['venus'].to_value()[0:i], color=venus_col, lw=0.1)
-    cx.tick_params(labelleft=False, labelbottom=False, left=False, right=False, bottom=False, labelright=False,
+    cx.tick_params(labelleft=False, labelbottom=True, left=False, right=False, bottom=False, labelright=True,
                    direction='in', width=0.5, length=3)
     cx.set_xlabel('x-z plane (AU)')
 
