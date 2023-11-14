@@ -11,9 +11,12 @@ import seaborn as sns
 
 import os
 import subprocess
+import timeit
 
 
 def main():
+    global start_time
+    start_time = timeit.default_timer()
     print("Running solar system model...")
 
     spice_files = ['naif0012.tls',
@@ -259,6 +262,8 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
     fx.set_xlabel('Time (UT)')
     fx.set_ylabel('Angle between Earth/Mars and Earth/Sun (deg)')
 
+
+    print("The time difference is :", timeit.default_timer() - start_time)
     # save each timestep plot
     if save_plot:
         # if save_dir is not provided then create a solo_plots path
