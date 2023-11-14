@@ -39,8 +39,8 @@ def main():
 
     positions_earth, lightTimes_earth = spiceypy.spkezr('Earth', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
     positions_mars, lightTimes_mars = spiceypy.spkezr('Mars', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
-    positions_phobos, lightTimes_phobos = spiceypy.spkezr('Phobos', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
-    positions_deimos, lightTimes_deimos = spiceypy.spkezr('Deimos', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
+    positions_venus, lightTimes_venus = spiceypy.spkezr('Venus', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
+    positions_mercury, lightTimes_mercury = spiceypy.spkezr('Mercury', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
     positions_sun, lightTimes_sun = spiceypy.spkezr('Sun', time_spice, 'ECLIPJ2000', 'NONE', 'Sun')
 
     global per_object, x_object, y_object, z_object
@@ -52,8 +52,8 @@ def main():
     extract_object(positions_earth, 'earth')
     extract_object(positions_sun, 'sun')
     extract_object(positions_mars, 'mars')
-    extract_object(positions_phobos, 'phobos')
-    extract_object(positions_deimos, 'deimos')
+    extract_object(positions_venus, 'venus')
+    extract_object(positions_mercury, 'mercury')
 
     do_calculations()
 
@@ -133,11 +133,11 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
     mars_col = 'red'
     cmap_mars = sns.light_palette(mars_col, as_cmap=True)
 
-    phobos_col = 'gray'
-    cmap_phobos = sns.light_palette(phobos_col, as_cmap=True)
+    mercury_col = 'gray'
+    cmap_mercury = sns.light_palette(mercury_col, as_cmap=True)
 
-    deimos_col = 'black'
-    cmap_deimos = sns.light_palette(deimos_col, as_cmap=True)
+    venus_col = 'black'
+    cmap_venus = sns.light_palette(venus_col, as_cmap=True)
 
     # i is for each timestep - but we also want to plot the
     # previous 20 timesteps, j, to illustrate the trajectory path
@@ -149,8 +149,8 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
     # set up plotting information in each dictionary
     kwargs_Earth = {'s': 10, 'c': time_spice[j:i], 'cmap': cmap_earth}
     kwargs_Mars = {'s': 5, 'c': time_spice[j:i], 'cmap': cmap_mars}
-    kwargs_Phobos = {'s': 5, 'c': time_spice[j:i], 'cmap': cmap_phobos}
-    kwargs_Deimos = {'s': 5, 'c': time_spice[j:i], 'cmap': cmap_deimos}
+    kwargs_Mercury = {'s': 5, 'c': time_spice[j:i], 'cmap': cmap_mercury}
+    kwargs_Venus = {'s': 5, 'c': time_spice[j:i], 'cmap': cmap_venus}
 
     # get box sizes for plotting positions on figure
     xx = 10
@@ -163,19 +163,19 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
     ax = plt.axes([0.0, 0.02, 0.6, 0.90], projection='3d')
     ax.scatter(x_object['earth'].to_value()[j:i], y_object['earth'].to_value()[j:i], z_object['earth'].to_value()[j:i], **kwargs_Earth)
     ax.scatter(x_object['mars'].to_value()[j:i], y_object['mars'].to_value()[j:i], z_object['mars'].to_value()[j:i], **kwargs_Mars)
-    ax.scatter(x_object['phobos'].to_value()[j:i], y_object['phobos'].to_value()[j:i], z_object['phobos'].to_value()[j:i], **kwargs_Phobos)
-    ax.scatter(x_object['deimos'].to_value()[j:i], y_object['deimos'].to_value()[j:i], z_object['deimos'].to_value()[j:i], **kwargs_Deimos)
+    ax.scatter(x_object['mercury'].to_value()[j:i], y_object['mercury'].to_value()[j:i], z_object['mercury'].to_value()[j:i], **kwargs_Mercury)
+    ax.scatter(x_object['venus'].to_value()[j:i], y_object['venus'].to_value()[j:i], z_object['venus'].to_value()[j:i], **kwargs_Venus)
     ax.scatter(x_object['sun'].to_value()[i], y_object['sun'].to_value()[i], z_object['sun'].to_value()[i], color='y', s=30)
 
     ax.scatter(x_object['earth'].to_value()[i], y_object['earth'].to_value()[i], z_object['earth'].to_value()[i], color=earth_col, label='Earth',
                s=10)
     ax.scatter(x_object['mars'].to_value()[i], y_object['mars'].to_value()[i], z_object['mars'].to_value()[i], color=mars_col, label='Mars',
                s=5)
-    ax.scatter(x_object['phobos'].to_value()[i], y_object['phobos'].to_value()[i], z_object['phobos'].to_value()[i],
-               color=phobos_col, label='Phobos',
+    ax.scatter(x_object['mercury'].to_value()[i], y_object['mercury'].to_value()[i], z_object['mercury'].to_value()[i],
+               color=mercury_col, label='Mercury',
                s=5)
-    ax.scatter(x_object['deimos'].to_value()[i], y_object['deimos'].to_value()[i], z_object['deimos'].to_value()[i],
-               color=deimos_col, label='Deimos',
+    ax.scatter(x_object['venus'].to_value()[i], y_object['venus'].to_value()[i], z_object['venus'].to_value()[i],
+               color=venus_col, label='Venus',
                s=5)
 
     ax.plot(x_object['earth'].to_value()[0:i], y_object['earth'].to_value()[0:i], z_object['earth'].to_value()[0:i], color=earth_col, lw=0.2)
@@ -205,15 +205,15 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
     bx.scatter(x_object['sun'].to_value()[i], y_object['sun'].to_value()[i], color='y', s=30)
     bx.scatter(x_object['earth'].to_value()[j:i], y_object['earth'].to_value()[j:i], **kwargs_Earth)
     bx.scatter(x_object['mars'].to_value()[j:i], y_object['mars'].to_value()[j:i], **kwargs_Mars)
-    bx.scatter(x_object['phobos'].to_value()[j:i], y_object['phobos'].to_value()[j:i], **kwargs_Phobos)
-    bx.scatter(x_object['deimos'].to_value()[j:i], y_object['deimos'].to_value()[j:i], **kwargs_Deimos)
+    bx.scatter(x_object['mercury'].to_value()[j:i], y_object['mercury'].to_value()[j:i], **kwargs_Mercury)
+    bx.scatter(x_object['venus'].to_value()[j:i], y_object['venus'].to_value()[j:i], **kwargs_Venus)
     bx.tick_params(direction='in', labelleft=False, left=False, bottom=False, labelbottom=False, width=0.5,
                    length=3)
 
     bx.plot(x_object['earth'].to_value()[0:i], y_object['earth'].to_value()[0:i], color=earth_col, lw=0.2)
     bx.plot(x_object['mars'].to_value()[0:i], y_object['mars'].to_value()[0:i], color=mars_col, lw=0.1)
-    bx.plot(x_object['phobos'].to_value()[0:i], y_object['phobos'].to_value()[0:i], color=phobos_col, lw=0.1)
-    bx.plot(x_object['deimos'].to_value()[0:i], y_object['deimos'].to_value()[0:i], color=deimos_col, lw=0.1)
+    bx.plot(x_object['mercury'].to_value()[0:i], y_object['mercury'].to_value()[0:i], color=mercury_col, lw=0.1)
+    bx.plot(x_object['venus'].to_value()[0:i], y_object['venus'].to_value()[0:i], color=venus_col, lw=0.1)
     bx.set_xlabel('x-y plane (AU)')
 
     bx.set_xlim(-1.5, 1.5)
@@ -226,12 +226,12 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
     cx.scatter(x_object['sun'].to_value()[i], z_object['sun'].to_value()[i], color='y', s=30)
     cx.scatter(x_object['earth'].to_value()[j:i], z_object['earth'].to_value()[j:i], **kwargs_Earth)
     cx.scatter(x_object['mars'].to_value()[j:i], z_object['mars'].to_value()[j:i], **kwargs_Mars)
-    cx.scatter(x_object['phobos'].to_value()[j:i], z_object['phobos'].to_value()[j:i], **kwargs_Phobos)
-    cx.scatter(x_object['deimos'].to_value()[j:i], z_object['deimos'].to_value()[j:i], **kwargs_Deimos)
+    cx.scatter(x_object['mercury'].to_value()[j:i], z_object['mercury'].to_value()[j:i], **kwargs_Mercury)
+    cx.scatter(x_object['venus'].to_value()[j:i], z_object['venus'].to_value()[j:i], **kwargs_Venus)
     cx.plot(x_object['earth'].to_value()[0:i], z_object['earth'].to_value()[0:i], color=earth_col, lw=0.2)
     cx.plot(x_object['mars'].to_value()[0:i], z_object['mars'].to_value()[0:i], color=mars_col, lw=0.1)
-    cx.plot(x_object['phobos'].to_value()[0:i], z_object['phobos'].to_value()[0:i], color=phobos_col, lw=0.1)
-    cx.plot(x_object['deimos'].to_value()[0:i], z_object['deimos'].to_value()[0:i], color=deimos_col, lw=0.1)
+    cx.plot(x_object['mercury'].to_value()[0:i], z_object['mercury'].to_value()[0:i], color=mercury_col, lw=0.1)
+    cx.plot(x_object['venus'].to_value()[0:i], z_object['venus'].to_value()[0:i], color=venus_col, lw=0.1)
     cx.tick_params(labelleft=False, labelbottom=False, left=False, right=False, bottom=False, labelright=False,
                    direction='in', width=0.5, length=3)
     cx.set_xlabel('x-z plane (AU)')
