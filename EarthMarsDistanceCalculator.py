@@ -67,8 +67,8 @@ def main():
     # While loop is probably not so efficient. Maybe change to some other distance calculation method.
     # Commented code currently doesn't work
 
-    plot_full(101, save_plot=False, save_dir='current_plots\\')
-    #make_movie(0, len(x_object['earth'])-1, save_dir='current_plots\\')
+    #plot_full(101, save_plot=False, save_dir='current_plots\\')
+    make_movie(0, len(x_object['earth'])-1, save_dir='current_plots\\')
 
 
 def extract_object(object_position, object_name):

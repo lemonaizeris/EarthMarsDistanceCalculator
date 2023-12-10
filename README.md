@@ -1,7 +1,20 @@
-# EarthMarsDistanceCalculator
+# Earth-Mars Distance Calculator
+*Lemonaizeris*
 
-A program to simulate Solar System's planets' orbits for the upcoming 10 years.
+*Python Version 3.0+*
 
-Currently it simulates inner planets' orbits and calculates distances between Earth and Mars.
+## Description
+A program to:
+1) Simulate Solar System's inner planets' orbits for the period of 2024-2034.
+2) Calculate distance between Earth and Mars for the same period 2024-2034.
 
-In the future it will check when the planets are visible on the northern Earth's hemisphere.
+As an output it creates:
+1) A folder *current_plots* with images of each simulated day of 2024-2034.
+2) A video file of the images of all simulated days for the 2024-2034.
+
+
+## Usage
+
+Run Command:
+
+	python EarthMarsDistanceCalculator.py
