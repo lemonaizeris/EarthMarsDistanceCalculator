@@ -20,8 +20,7 @@ def main():
     print("Running solar system model...")
 
     spice_files = ['naif0012.tls',
-                   'de441_part-1.bsp',
-                   'de441_part-2.bsp',
+                   'de430.bsp',
                    'mar097s.bsp',
                    'mars_iau2000_v1.tpc',
                    'pck00011.tpc']

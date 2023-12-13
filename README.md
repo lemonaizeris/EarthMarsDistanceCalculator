@@ -13,6 +13,10 @@ As an output it creates:
 2) A video file of the images of all simulated days for the 2024-2034.
 
 
+## Requirements
+
+Python dependencies are in the file *pythonDependencyRequirements.txt*
+
 ## Usage
 
 Run Command:
