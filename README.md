@@ -15,7 +15,24 @@ As an output it creates:
 
 ## Requirements
 
+### Python modules
+
 Python dependencies are in the file *pythonDependencyRequirements.txt*
+
+### NASA NAIF SPICE kernels
+
+To have this working you need following SPICE kernel files that you can get from NASA's NAIF
+https://naif.jpl.nasa.gov/pub/naif/
+
+The following SPICE files are required and can be found un generic_kernels folder:
+
+1) naif0012.tls
+2) de430.bsp
+3) mars_iau2000_v1.tpc 
+4) pck00011.tpc
+
+From MARS2020 mission folder you need:
+1) mar097s.bsp
 
 ## Usage
 

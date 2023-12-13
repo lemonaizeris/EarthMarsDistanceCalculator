@@ -271,7 +271,6 @@ def plot_full(i, save_plot=False, save_dir='current_plots'):
         if not os.path.exists(save_dir):
             os.mkdir(save_dir)
 
-        # this will save the files is ~/solo_plots/all_plots_0001.png for i = 1
         plt.savefig(os.path.join(save_dir, 'all_plots_{:04d}.png'.format(i)), dpi=250)
         plt.close()
     else:
